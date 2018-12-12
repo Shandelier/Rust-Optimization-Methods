@@ -56,7 +56,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>, mut temperature: f32, annealing_velocit
             current_path = new_path;
         }
 
-        temperature *= (1.0f32 - annealing_velocity);
+        temperature *= 1.0f32 - annealing_velocity;
     }
 
     return (best_path, best_value);

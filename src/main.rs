@@ -6,7 +6,6 @@ mod simulated_annealing;
 
 use std::io;
 
-
 fn main() {
     println!();
     println!("Projektowanie efektywnych algorytmów - projekt 2");
@@ -20,9 +19,10 @@ fn main() {
 
         println!();
         println!("Wybierz funkcję:");
-        println!("1. Wczytaj plik z grafem");
-        println!("2. Wygeneruj losowy graf");
-        println!("3. Przeszukiwanie tabu");
+        println!("1. Wczytaj graf z pliku");
+        println!("2. Generuj graf");
+        println!("3. Tabu Search");
+        println!("4. Symulowane Wyżarzanie");
         println!("0. Wyjście");
         println!("Wybór: ");
 
@@ -36,7 +36,7 @@ fn main() {
 
         //Podejmij akcję w zalezności od wyboru użytkownika
         match selected_number {
-            0 => std::process::exit(0x0),
+            0 => std::process::exit(0),
             1 => {
                 let mut file_name = String::new();
                 println!("Nazwa pliku: ");
@@ -64,7 +64,7 @@ fn main() {
                 if matrix.is_empty() {
                     println!("Najpierw wczytaj graf z pliku!");
                 } else {
-                    solve_tsp(&mut matrix)
+                    tabu_search::prepare(&mut matrix)
                 }
             }
             4 => {
@@ -78,45 +78,5 @@ fn main() {
         }
     };
 
-    fn solve_tsp(mut matrix: &mut Vec<Vec<i32>>) {
 
-        // Wczytanie iteracji
-        println!("Iteracje:");
-        let mut iterations: String = String::new();
-        io::stdin().read_line(&mut iterations).expect(
-            "Błąd wejścia/wyjścia",
-        );
-        let iterations: i32 = iterations.trim().parse().expect("Błędna wartość");
-
-        // Wczytanie kadencji
-        println!("Kadencje:");
-        let mut lifetime: String = String::new();
-        io::stdin().read_line(&mut lifetime).expect(
-            "Błąd wejścia/wyjścia",
-        );
-        let lifetime: i32 = lifetime.trim().parse().expect("Błędna wartość");
-
-        // Maksymalna liczba błędów
-        println!("Błędy:");
-        let mut critical_events: String = String::new();
-        io::stdin().read_line(&mut critical_events).expect(
-            "Błąd wejścia/wyjścia",
-        );
-        let critical_events: i32 = critical_events.trim().parse().expect("Błędna wartość");
-
-        // Maksymalny czas
-        println!("Maksymalny czas:");
-        let mut max_time: String = String::new();
-        io::stdin().read_line(&mut max_time).expect(
-            "Błąd wejścia/wyjścia",
-        );
-        let max_time: i64 = max_time.trim().parse().expect("Błędna wartość");
-
-        // Rozwiązanie z parametrami
-        tabu_search::solve(&mut matrix,
-                           iterations,
-                           lifetime,
-                           critical_events,
-                           max_time);
-    }
 }

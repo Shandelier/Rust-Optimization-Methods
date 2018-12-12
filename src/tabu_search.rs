@@ -1,7 +1,49 @@
 extern crate rand;
 extern crate time;
-use self::rand::Rng;
 
+use self::rand::Rng;
+use std::io;
+
+pub fn prepare(mut matrix: &mut Vec<Vec<i32>>) {
+    // Wczytanie iteracji
+    println!("Iteracje:");
+    let mut iterations: String = String::new();
+    io::stdin().read_line(&mut iterations).expect(
+        "Błąd wejścia/wyjścia",
+    );
+    let iterations: i32 = iterations.trim().parse().expect("Błędna wartość");
+
+    // Wczytanie kadencji
+    println!("Kadencje:");
+    let mut lifetime: String = String::new();
+    io::stdin().read_line(&mut lifetime).expect(
+        "Błąd wejścia/wyjścia",
+    );
+    let lifetime: i32 = lifetime.trim().parse().expect("Błędna wartość");
+
+    // Maksymalna liczba błędów
+    println!("Błędy:");
+    let mut critical_events: String = String::new();
+    io::stdin().read_line(&mut critical_events).expect(
+        "Błąd wejścia/wyjścia",
+    );
+    let critical_events: i32 = critical_events.trim().parse().expect("Błędna wartość");
+
+    // Maksymalny czas
+    println!("Maksymalny czas:");
+    let mut max_time: String = String::new();
+    io::stdin().read_line(&mut max_time).expect(
+        "Błąd wejścia/wyjścia",
+    );
+    let max_time: i64 = max_time.trim().parse().expect("Błędna wartość");
+
+    // Rozwiązanie z parametrami
+    solve(&mut matrix,
+          iterations,
+          lifetime,
+          critical_events,
+          max_time);
+}
 
 pub fn solve(matrix: &mut Vec<Vec<i32>>,
              iterations: i32,
@@ -66,8 +108,10 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
 
         // Zmienna przechowująca koszt scieżki badanej w aktualnej iteracji
         let iteration_path_value = current_path_value.clone();
+
         // Zmiana elementów w ścieżce
         current_path = swap_elements(&mut current_path, &mut tabu_list, &matrix, lifetime);
+
         // Aktualizacja wagi aktualnej ściezki
         current_path_value = get_current_path_value(&matrix, &mut current_path);
 
@@ -131,8 +175,8 @@ fn generate_empty_tabu_list(size: i32) -> Vec<Vec<i32>> {
     return tabu_list;
 }
 
-fn get_current_path_value(matrix: &Vec<Vec<i32>>,
-                          path: &mut Vec<i32>) -> i32 {
+pub fn get_current_path_value(matrix: &Vec<Vec<i32>>,
+                          path: &Vec<i32>) -> i32 {
 
     // Początkowy koszt ścieżki to 0
     let mut value: i32 = 0;
@@ -158,31 +202,81 @@ fn swap_elements(path: &mut Vec<i32>,
                  matrix: &Vec<Vec<i32>>,
                  lifetime: i32) -> Vec<i32> {
     let mut current_path: Vec<i32>;
-    let mut best_path: Vec<i32> = Vec::new();
+    let mut best_path: Vec<i32> = path.clone();
     let mut current_path_value: i32;
-    let mut best_path_value: i32 = 99999999;
-    let mut best_city_x: i32 = 0;
-    let mut best_city_y: i32 = 0;
+    let mut best_path_value: i32 = get_current_path_value(&matrix, &best_path);
+    let mut best_city_x: usize = 0;
+    let mut best_city_y: usize = 0;
 
     for i in 0..path.len() {
         for j in 0..path.len() {
+            // Nie wolno przechodzić z miasta x do miasta x.
+            if i == j {
+                continue;
+            }
+
             if tabu_list[i][j] == 0 {
                 current_path = path.clone();
-                current_path[i] = path[j];
-                current_path[j] = path[i];
+
+                let mut city_a_index: usize = 0;
+                let mut city_b_index: usize = 0;
+
+                for m in 0..path.len() {
+                    if path[m] == (i as i32) {
+                        city_a_index = m;
+                    }
+                    if path[m] == (j as i32) {
+                        city_b_index = m;
+                    }
+                }
+                current_path[city_a_index] = j as i32;
+                current_path[city_b_index] = i as i32;
+
                 current_path_value = get_current_path_value(matrix, &mut current_path);
 
                 if current_path_value < best_path_value {
                     best_path = current_path;
                     best_path_value = current_path_value;
-                    best_city_x = i as i32;
-                    best_city_y = j as i32;
+                    best_city_x = i;
+                    best_city_y = j;
                 }
             }
         }
     }
 
-    tabu_list[(best_city_x as usize)][(best_city_y as usize)] = lifetime;
+    tabu_list[best_city_x][best_city_y] = lifetime;
 
     return best_path;
+}
+
+mod ts_tests {
+    #[test]
+    pub fn test_swap_elements() {
+        use tabu_search;
+
+        let mut path: Vec<i32> = vec![4, 3, 2, 1, 0];
+        let mut tabu_list: Vec<Vec<i32>> = vec![vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0]];
+
+        let mut matrix: Vec<Vec<i32>> = vec![vec![-1, 27, 57, 59, 55],
+                                             vec![1, -1, 21, 31, 53],
+                                             vec![55, 17, -1, 69, 18],
+                                             vec![71, 47, 53, -1, 59],
+                                             vec![83, 17, 57, 95, -1]];
+
+
+        let lifetime: i32 = 5;
+
+        let path_cost = tabu_search::get_current_path_value(&matrix, &path);
+        for i in 0..1000 {
+            let result = tabu_search::swap_elements(&mut path, &mut tabu_list, &matrix, lifetime);
+            let result_cost = tabu_search::get_current_path_value(&matrix, &result);
+            eprintln!("[{}] {:?} -> {}", i, result, result_cost);
+
+            assert_eq!(true, result_cost <= path_cost);
+        }
+    }
 }
