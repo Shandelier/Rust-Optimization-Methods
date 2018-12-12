@@ -17,11 +17,11 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     // Aktualna ściezka
     let mut current_path: Vec<i32> = Vec::new();
     // Koszt aktualnej ściezki
-    let mut current_path_value: i32 = 9999999999;
+    let mut current_path_value: i32 = <i32>::max_value();
     // Najlepsza ściezka
     let mut best_path: Vec<i32>;
     // Kosazt najlepszej ścieżki
-    let mut best_path_value: i32 = 9999999999;
+    let mut best_path_value: i32 = <i32>::max_value();
     // Lista tabu
     let mut tabu_list: Vec<Vec<i32>>;
 

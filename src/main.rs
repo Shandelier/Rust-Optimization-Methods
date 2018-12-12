@@ -2,15 +2,15 @@ mod file_reader;
 mod print_utils;
 mod graph_generator;
 mod tabu_search;
+mod simulated_annealing;
 
 use std::io;
 
 
 fn main() {
     println!();
-    println!("Projektowanie Efektywnych Algorytmów - Zadanie 2");
+    println!("Projektowanie efektywnych algorytmów - projekt 2");
     println!("Problem komiwojażera (TSP)");
-    println!("Igor Kurek, 226004");
 
     //Zmienna przechowująca graf w postaci macierzowej
     let mut matrix: Vec<Vec<i32>> = Vec::new();
@@ -65,6 +65,13 @@ fn main() {
                     println!("Najpierw wczytaj graf z pliku!");
                 } else {
                     solve_tsp(&mut matrix)
+                }
+            }
+            4 => {
+                if matrix.is_empty() {
+                    println!("Najpierw wczytaj graf z pliku!");
+                } else {
+                    simulated_annealing::prepare(&mut matrix);
                 }
             }
             _ => println!("Niepoprawna wartość!"),
