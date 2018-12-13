@@ -4,46 +4,13 @@ extern crate time;
 use self::rand::Rng;
 use std::io;
 
-pub fn prepare(mut matrix: &mut Vec<Vec<i32>>) {
-    // Wczytanie iteracji
-    println!("Iteracje:");
-    let mut iterations: String = String::new();
-    io::stdin().read_line(&mut iterations).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    let iterations: i32 = iterations.trim().parse().expect("Błędna wartość");
-
-    // Wczytanie kadencji
-    println!("Kadencje:");
-    let mut lifetime: String = String::new();
-    io::stdin().read_line(&mut lifetime).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    let lifetime: i32 = lifetime.trim().parse().expect("Błędna wartość");
-
-    // Maksymalna liczba błędów
-    println!("Błędy:");
-    let mut critical_events: String = String::new();
-    io::stdin().read_line(&mut critical_events).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    let critical_events: i32 = critical_events.trim().parse().expect("Błędna wartość");
-
-    // Maksymalny czas
-    println!("Maksymalny czas:");
-    let mut max_time: String = String::new();
-    io::stdin().read_line(&mut max_time).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    let max_time: i64 = max_time.trim().parse().expect("Błędna wartość");
-
-    // Rozwiązanie z parametrami
-    solve(&mut matrix,
-          iterations,
-          lifetime,
-          critical_events,
-          max_time);
-}
+//pub fn prepare(mut matrix: &mut Vec<Vec<i32>>, time_max: i64, ts_neighbourhood_definition: i32, ts_iterations: i32, ts_lifetime: i32, ts_critical_events: i32) {
+//    solve(&mut matrix,
+//          ts_iterations,
+//          ts_lifetime,
+//          ts_critical_events,
+//          time_max);
+//}
 
 pub fn solve(matrix: &mut Vec<Vec<i32>>,
              iterations: i32,
@@ -54,16 +21,22 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
 
     // Początek zliczania czasu
     let timer_start = time::PreciseTime::now();
+
     // Ilość istotnych zdarzeń
     let mut critical_events: i32 = 0;
+
     // Aktualna ściezka
     let mut current_path: Vec<i32> = Vec::new();
+
     // Koszt aktualnej ściezki
-    let mut current_path_value: i32 = <i32>::max_value();
+    let mut current_path_value: i32;
+
     // Najlepsza ściezka
     let mut best_path: Vec<i32>;
+
     // Kosazt najlepszej ścieżki
-    let mut best_path_value: i32 = <i32>::max_value();
+    let mut best_path_value: i32;
+
     // Lista tabu
     let mut tabu_list: Vec<Vec<i32>>;
 
@@ -82,16 +55,14 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     tabu_list = generate_empty_tabu_list(matrix.len() as i32);
 
     // Przypisanie początkowych wartości ściezki jako najlepszych znalezionych
-    //K: użyj .clone() aby current_path nie straciło ownershipa
+    // K: użyj .clone() aby current_path nie straciło ownershipa
     best_path = current_path.clone();
     best_path_value = current_path_value.clone();
 
     println!("Początek algorytmu...");
 
-
     // Pętla wykonująca zadaną ilość iteracji
     for _i in 0..iterations {
-
         // Obliczenie aktualnego czasu
         let elapsed_time = timer_start
             .to(time::PreciseTime::now())
@@ -101,7 +72,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
         // Warunek kończący czasowo
         // Jeżeli czas jest ustawiony na inny niż 0s
         // Pętla przerywa się po wybranym czasie
-        if (elapsed_time >= (max_time_in_seconds * 1000000000)) && max_time_in_seconds != 0 {
+        if (elapsed_time >= (max_time_in_seconds * 1000000000) as i64) && max_time_in_seconds != 0 {
             println!("Przekroczono czas");
             break;
         }
@@ -175,7 +146,7 @@ fn generate_empty_tabu_list(size: i32) -> Vec<Vec<i32>> {
     return tabu_list;
 }
 
-pub fn get_current_path_value(matrix: &Vec<Vec<i32>>,
+fn get_current_path_value(matrix: &Vec<Vec<i32>>,
                           path: &Vec<i32>) -> i32 {
 
     // Początkowy koszt ścieżki to 0
@@ -249,9 +220,10 @@ fn swap_elements(path: &mut Vec<i32>,
     return best_path;
 }
 
+#[cfg(test)]
 mod ts_tests {
     #[test]
-    pub fn test_swap_elements() {
+    fn test_finding_better_paths() {
         use tabu_search;
 
         let mut path: Vec<i32> = vec![4, 3, 2, 1, 0];
@@ -261,11 +233,11 @@ mod ts_tests {
                                                 vec![0, 0, 0, 0, 0],
                                                 vec![0, 0, 0, 0, 0]];
 
-        let mut matrix: Vec<Vec<i32>> = vec![vec![-1, 27, 57, 59, 55],
-                                             vec![1, -1, 21, 31, 53],
-                                             vec![55, 17, -1, 69, 18],
-                                             vec![71, 47, 53, -1, 59],
-                                             vec![83, 17, 57, 95, -1]];
+        let matrix: Vec<Vec<i32>> = vec![vec![-1, 27, 57, 59, 55],
+                                         vec![1, -1, 21, 31, 53],
+                                         vec![55, 17, -1, 69, 18],
+                                         vec![71, 47, 53, -1, 59],
+                                         vec![83, 17, 57, 95, -1]];
 
 
         let lifetime: i32 = 5;
@@ -278,5 +250,38 @@ mod ts_tests {
 
             assert_eq!(true, result_cost <= path_cost);
         }
+    }
+
+    /* Sprawdza, czy nastąpiła zmiana tylko dwóch elementów. */
+    #[test]
+    fn test_swap_elements() {
+        use tabu_search;
+
+        let mut path: Vec<i32> = vec![4, 3, 2, 1, 0];
+        let mut tabu_list: Vec<Vec<i32>> = vec![vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0],
+                                                vec![0, 0, 0, 0, 0]];
+
+        let matrix: Vec<Vec<i32>> = vec![vec![-1, 27, 57, 59, 55],
+                                         vec![1, -1, 21, 31, 53],
+                                         vec![55, 17, -1, 69, 18],
+                                         vec![71, 47, 53, -1, 59],
+                                         vec![83, 17, 57, 95, -1]];
+
+
+        let lifetime: i32 = 5;
+
+        let result = tabu_search::swap_elements(&mut path, &mut tabu_list, &matrix, lifetime);
+
+        let mut changes: i32 = 0;
+        for i in 0..result.len() {
+            if result[i] != path[i] {
+                changes += 1;
+            }
+        }
+
+        assert_eq!(2, changes);
     }
 }

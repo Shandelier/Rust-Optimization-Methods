@@ -1,37 +1,21 @@
 extern crate time;
 extern crate rand;
 
-use std::io;
 use self::rand::Rng;
 
-pub fn prepare(matrix: &mut Vec<Vec<i32>>) {
-    let mut temperature: f32;
-    let mut annealing_velocity: f32;
+pub fn prepare(matrix: &mut Vec<Vec<i32>>, sa_temperature: f32, sa_annealing_velocity: f32) {
+//    println!("Rozpoczynanie...");
 
-    println!("Temperatura: ");
-    let mut s_temperature: String = String::new();
-    io::stdin().read_line(&mut s_temperature).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    temperature = s_temperature.trim().parse().expect("Błędna wartość");
+//    let (best_path, best_value) = solve(matrix, sa_temperature, sa_annealing_velocity);
 
-    println!("Prędkość wyżarzania: ");
-    let mut s_annealing_velocity: String = String::new();
-    io::stdin().read_line(&mut s_annealing_velocity).expect(
-        "Błąd wejścia/wyjścia",
-    );
-    annealing_velocity = s_annealing_velocity.trim().parse().expect("Błędna wartość");
-
-
-    println!("Rozpoczynanie...");
-    let timer_start = time::PreciseTime::now();
-    let (best_path, best_value) = solve(matrix, temperature, annealing_velocity);
-    let timer_stop = time::PreciseTime::now();
-
-    println!("Czas trwania: {} ms.\nNajlepsza ścieżka: {:?}.\nKoszt: {}.", timer_start.to(timer_stop).num_milliseconds(), best_path, best_value);
+//    println!("Czas trwania: {} ms.\nNajlepsza ścieżka: {:?}.\nKoszt: {}.", timer_start.to(timer_stop).num_milliseconds(), best_path, best_value);
 }
 
-pub fn solve(matrix: &mut Vec<Vec<i32>>, mut temperature: f32, annealing_velocity: f32) -> (Vec<i32>, i32) {
+pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f32, time_max: i64) -> (Vec<i32>, i32) {
+    let timer_start = time::PreciseTime::now();
+
+    let mut _temperature: f32 = temperature;
+
     // Przygotowanie ścieżki początkowej
     let mut current_path: Vec<i32> = Vec::new();
     for i in 0..(matrix.len() as i32) {
@@ -45,19 +29,34 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>, mut temperature: f32, annealing_velocit
     let mut best_path = current_path.clone();
     let mut best_value = current_value.clone();
 
-    while temperature > 1.0 {
+    while _temperature > 1.0 {
+        if timer_start.to(time::PreciseTime::now()).num_seconds() >= time_max {
+            eprintln!("Przekroczono czas wykonania.");
+            break;
+        }
+
         let new_path: Vec<i32> = swap_random_cities(&current_path);
         let new_value = path_value(&matrix, &new_path);
 
         let p: f32 = probability(&current_value, &new_value, &temperature);
         let random: f32 = rand::thread_rng().gen_range(0.0f32, 1.0f32);
-        if p > random {
+
+        if p >= random {
             current_value = new_value;
             current_path = new_path;
+
+            if current_value < best_value {
+                best_value = current_value;
+                best_path = current_path.clone();
+            }
         }
 
-        temperature *= 1.0f32 - annealing_velocity;
+        _temperature *= 1.0f32 - annealing_velocity;
     }
+
+    let timer_stop = time::PreciseTime::now();
+
+    println!("Czas trwania: {} ms.\nNajlepsza ścieżka: {:?}.\nKoszt: {}.", timer_start.to(timer_stop).num_milliseconds(), best_path, best_value);
 
     return (best_path, best_value);
 }
@@ -98,6 +97,7 @@ pub fn probability(current_value: &i32, new_value: &i32, temperature: &f32) -> f
     return probability;
 }
 
+#[cfg(test)]
 mod sa_tests {
     use simulated_annealing;
 
