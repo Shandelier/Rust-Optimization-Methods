@@ -2,15 +2,7 @@ extern crate rand;
 extern crate time;
 
 use self::rand::Rng;
-use std::io;
-
-//pub fn prepare(mut matrix: &mut Vec<Vec<i32>>, time_max: i64, ts_neighbourhood_definition: i32, ts_iterations: i32, ts_lifetime: i32, ts_critical_events: i32) {
-//    solve(&mut matrix,
-//          ts_iterations,
-//          ts_lifetime,
-//          ts_critical_events,
-//          time_max);
-//}
+use print_utils;
 
 pub fn solve(matrix: &mut Vec<Vec<i32>>,
              iterations: i32,
@@ -34,10 +26,10 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     // Najlepsza ściezka
     let mut best_path: Vec<i32>;
 
-    // Kosazt najlepszej ścieżki
+    // Koszt najlepszej ścieżki
     let mut best_path_value: i32;
 
-    // Lista tabu
+    // Lista zakazów
     let mut tabu_list: Vec<Vec<i32>>;
 
     // Wypełnij wektor okreslający ściezkę kolejnymi wierzchokami
@@ -73,7 +65,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
         // Jeżeli czas jest ustawiony na inny niż 0s
         // Pętla przerywa się po wybranym czasie
         if (elapsed_time >= (max_time_in_seconds * 1000000000) as i64) && max_time_in_seconds != 0 {
-            println!("Przekroczono czas");
+            println!("Przekroczono czas wykonania.");
             break;
         }
 
@@ -127,9 +119,11 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
         }
     }
 
-    println!();
-    println!("Najlepsza ściezka: {:?}", best_path);
-    println!("Koszt najlepszej ścieżki: {}", best_path_value);
+    print_utils::print_result(best_path_value,
+                              best_path.clone(),
+                              timer_start.to(time::PreciseTime::now())
+                                  .num_nanoseconds()
+                                  .unwrap());
 }
 
 fn generate_empty_tabu_list(size: i32) -> Vec<Vec<i32>> {

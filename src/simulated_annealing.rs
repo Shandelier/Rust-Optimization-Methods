@@ -2,16 +2,11 @@ extern crate time;
 extern crate rand;
 
 use self::rand::Rng;
-
-pub fn prepare(matrix: &mut Vec<Vec<i32>>, sa_temperature: f32, sa_annealing_velocity: f32) {
-//    println!("Rozpoczynanie...");
-
-//    let (best_path, best_value) = solve(matrix, sa_temperature, sa_annealing_velocity);
-
-//    println!("Czas trwania: {} ms.\nNajlepsza ścieżka: {:?}.\nKoszt: {}.", timer_start.to(timer_stop).num_milliseconds(), best_path, best_value);
-}
+use print_utils;
 
 pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f32, time_max: i64) -> (Vec<i32>, i32) {
+    println!("Przygotowywanie zmiennych…");
+
     let timer_start = time::PreciseTime::now();
 
     let mut _temperature: f32 = temperature;
@@ -25,11 +20,13 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f
 
     let mut current_value = path_value(&matrix, &current_path);
 
-    // Najlepsze znane rozwiązanie
+    // Najlepsze znane rozwiązanie - to to jedno, właśnie stworzone.
     let mut best_path = current_path.clone();
     let mut best_value = current_value.clone();
 
+    println!("Początek algorytmu...");
     while _temperature > 1.0 {
+        // Warunek sprawdzający, czy przekroczono czas.
         if timer_start.to(time::PreciseTime::now()).num_seconds() >= time_max {
             eprintln!("Przekroczono czas wykonania.");
             break;
@@ -56,7 +53,11 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f
 
     let timer_stop = time::PreciseTime::now();
 
-    println!("Czas trwania: {} ms.\nNajlepsza ścieżka: {:?}.\nKoszt: {}.", timer_start.to(timer_stop).num_milliseconds(), best_path, best_value);
+    print_utils::print_result(best_value,
+                              best_path.clone(),
+                              timer_start.to(timer_stop)
+                                  .num_nanoseconds()
+                                  .unwrap());
 
     return (best_path, best_value);
 }

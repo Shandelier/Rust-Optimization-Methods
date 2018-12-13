@@ -48,7 +48,7 @@ fn main() {
         println!("2. Generuj graf");
         println!("3. Ustaw parametry");
         println!("4. Tabu Search");
-        println!("5. Symulowane Wyżarzanie");
+        println!("5. Symulowane wyżarzanie");
         println!("0. Wyjście");
         println!("Wybór: ");
 
@@ -69,8 +69,8 @@ fn main() {
                 io::stdin()
                     .read_line(&mut file_name)
                     .expect(
-                    "Błąd wejścia/wyjścia",
-                );
+                        "Błąd wejścia/wyjścia",
+                    );
 
                 matrix = file_reader::read_any_file(String::from(file_name.trim()));
 
@@ -95,81 +95,87 @@ fn main() {
             3 => {
                 /*
                 - Kryterium stopu: czas
+
                 - [SA] Współczynnik zmiany temperatury
                 - [SA] Temperatura
-                -
+
                 - [TS] Kryterium sąsiedztwa
                 - [TS] Iteracje
-                - [TS]
+                - [TS] Kadencja
+                - [TS] Błędy
                 */
 
                 let mut input = String::new();
 
-                println!("Maksymalny czas wykonania algorytmu [s]: ");
-                //Wczytaj odpowiedź użytkownika
+                println!("Maksymalny czas wykonania algorytmu [s] [teraz: {}]: ", time_max);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
 
-                let max_time: i64 = input.trim().parse().expect("Błędna wartość");
+                if !input.trim().is_empty() {
+                    time_max = input.trim().parse().expect("Błędna wartość");
+                }
                 input.clear();
 
-                println!("[SA] Temperatura początkowa: ");
+
+                println!("[SA] Temperatura początkowa [teraz: {}]: ", sa_temperature);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-
-                let sa_temp: f32 = input.trim().parse().expect("Błędna wartość");
+                if !input.trim().is_empty() {
+                    sa_temperature = input.trim().parse().expect("Błędna wartość");
+                }
                 input.clear();
 
-                println!("[SA] Współczynnik zmiany temperatury: ");
+
+                println!("[SA] Współczynnik zmiany temperatury [teraz: {}]: ", sa_annealing_velocity);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-
-                let sa_ann_vel: f32 = input.trim().parse().expect("Błędna wartość");
+                if !input.trim().is_empty() {
+                    sa_annealing_velocity = input.trim().parse().expect("Błędna wartość");
+                }
                 input.clear();
 
-// TODO: Uncomment after implementation.
-//                println!("[TS] Definicja sąsiedztwa [0, 1, 2]: ");
-//                io::stdin().read_line(&mut input).expect(
-//                    "Błąd wejścia/wyjścia",
-//                );
-//                let ts_neigh_def: i32 = input.trim().parse().expect("Błędna wartość");
-                let ts_neigh_def: i32 = 0;
-//                input.clear();
-//                if !(ts_neigh_def == 0 || ts_neigh_def == 1 || ts_neigh_def == 2) {
-//                    panic!("Błędna wartość");
-//                }
 
-                println!("[TS] Iteracje: ");
+                println!("[TS] Definicja sąsiedztwa [0 - swap, 1 - insert, 2 - inverse] [teraz: {}]: ", ts_neighbourhood_definition);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-                let ts_iter: i32 = input.trim().parse().expect("Błędna wartość");
                 input.clear();
+                if !input.trim().is_empty() {
+                    ts_neighbourhood_definition = input.trim().parse().expect("Błędna wartość");
+                }
 
-                println!("[TS] Kadencja blokowanej ścieżki: ");
+
+                println!("[TS] Iteracje  [teraz: {}]: ", ts_iterations);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-                let ts_lt: i32 = input.trim().parse().expect("Błędna wartość");
+                if !input.trim().is_empty() {
+                    ts_iterations = input.trim().parse().expect("Błędna wartość");
+                }
                 input.clear();
 
-                println!("[TS] Ilość błędów do uznania za krytyczny: ");
+
+                println!("[TS] Kadencja blokowanej ścieżki [teraz: {}]: ", ts_lifetime);
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-                let ts_err: i32 = input.trim().parse().expect("Błędna wartość");
+                if !input.trim().is_empty() {
+                    ts_lifetime = input.trim().parse().expect("Błędna wartość");
+                }
                 input.clear();
 
-                time_max = max_time;
-                sa_temperature = sa_temp;
-                sa_annealing_velocity = sa_ann_vel;
-                ts_neighbourhood_definition = ts_neigh_def;
-                ts_iterations = ts_iter;
-                ts_lifetime = ts_lt;
-                ts_critical_events = ts_err;
+
+                println!("[TS] Ilość błędów do uznania za krytyczny [teraz: {}]: ", ts_critical_events);
+                io::stdin().read_line(&mut input).expect(
+                    "Błąd wejścia/wyjścia",
+                );
+                if !input.trim().is_empty() {
+                    ts_critical_events = input.trim().parse().expect("Błędna wartość");
+                }
+                input.clear();
             }
             4 => {
                 if matrix.is_empty() {
