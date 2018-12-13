@@ -189,16 +189,38 @@ fn main() {
                 }
             }
             44 => {
-                let datafiles = vec![("ftv47.atsp", 120), ("ftv170.atsp", 240), ("rbg403.atsp", 360)];
+                // (nazwa pliku, czas maksymalny)
+                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
                 for data in datafiles {
                     matrix = file_reader::read_any_file("data/".to_owned() + data.0);
                     for i in 0..10 {
-                        println!("\tIteracja {}.", i);
+                        println!("\tIteracja {}.", i + 1);
+
                         println!("\t\tTabu Search (iterations: {}, lifetime: {}, crit_events: {}, max_time: {}, neigh_def: {}).", ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
                         tabu_search::solve(&mut matrix, ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
+
                         println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
                         simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
+
                         println!("\nIteracja {} - koniec.", i);
+                    }
+                }
+            }
+            444 => {
+                // (nazwa pliku, czas maksymalny)
+//                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
+                let datafiles = vec![("ftv47.atsp", 60)];
+                for data in datafiles {
+                    matrix = file_reader::read_any_file("data/".to_owned() + data.0);
+                    for i in 0..10 {
+                        //println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
+                        simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
+
+                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
+                        simulated_annealing::solve(&mut matrix, sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
+
+                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
+                        simulated_annealing::solve(&mut matrix, sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
                     }
                 }
             }

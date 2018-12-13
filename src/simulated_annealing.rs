@@ -8,7 +8,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
              temperature: f32,
              annealing_velocity: f32,
              time_max: i64) -> (Vec<i32>, i32) {
-    println!("Przygotowywanie zmiennych…");
+    //println!("Przygotowywanie zmiennych…");
 
     let timer_start = time::PreciseTime::now();
 
@@ -27,11 +27,11 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     let mut best_path = current_path.clone();
     let mut best_value = current_value.clone();
 
-    println!("Początek algorytmu...");
+    //println!("Początek algorytmu...");
     while _temperature > 1.0 {
         // Warunek sprawdzający, czy przekroczono czas.
         if timer_start.to(time::PreciseTime::now()).num_seconds() >= time_max {
-            eprintln!("Przekroczono czas wykonania.");
+            //eprintln!("Przekroczono czas wykonania.");
             break;
         }
 
@@ -56,11 +56,13 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
 
     let timer_stop = time::PreciseTime::now();
 
-    print_utils::print_result(best_value,
-                              best_path.clone(),
-                              timer_start.to(timer_stop)
-                                  .num_nanoseconds()
-                                  .unwrap());
+//    print_utils::print_result(best_value,
+//                              best_path.clone(),
+//                              timer_start.to(timer_stop)
+//                                  .num_nanoseconds()
+//                                  .unwrap());
+
+    println!("{} {} {}", temperature, best_value, timer_start.to(timer_stop).num_nanoseconds().unwrap());
 
     return (best_path, best_value);
 }
