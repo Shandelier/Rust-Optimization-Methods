@@ -18,7 +18,7 @@ fn main() {
     let mut time_max: i64 = 180;
 
     // [SA] Współczynnik zmiany temperatury
-    let mut sa_annealing_velocity: f32 = 0.0001f32;
+    let mut sa_annealing_velocity: f32 = 0.999f32;
 
     // [SA] Temperatura
     let mut sa_temperature: f32 = 10000.0f32;
@@ -111,7 +111,6 @@ fn main() {
                 io::stdin().read_line(&mut input).expect(
                     "Błąd wejścia/wyjścia",
                 );
-
                 if !input.trim().is_empty() {
                     time_max = input.trim().parse().expect("Błędna wartość");
                 }
@@ -137,15 +136,15 @@ fn main() {
                 }
                 input.clear();
 
-
-                println!("[TS] Definicja sąsiedztwa [0 - swap, 1 - insert, 2 - inverse] [teraz: {}]: ", ts_neighbourhood_definition);
-                io::stdin().read_line(&mut input).expect(
-                    "Błąd wejścia/wyjścia",
-                );
-                input.clear();
-                if !input.trim().is_empty() {
-                    ts_neighbourhood_definition = input.trim().parse().expect("Błędna wartość");
-                }
+// TODO: Uncomment when implemented.
+//                println!("[TS] Definicja sąsiedztwa [0 - swap, 1 - insert, 2 - inverse] [teraz: {}]: ", ts_neighbourhood_definition);
+//                io::stdin().read_line(&mut input).expect(
+//                    "Błąd wejścia/wyjścia",
+//                );
+//                if !input.trim().is_empty() {
+//                    ts_neighbourhood_definition = input.trim().parse().expect("Błędna wartość");
+//                }
+//                input.clear();
 
 
                 println!("[TS] Iteracje  [teraz: {}]: ", ts_iterations);
@@ -185,7 +184,22 @@ fn main() {
                                        ts_iterations,
                                        ts_lifetime,
                                        ts_critical_events,
-                                       time_max);
+                                       time_max,
+                                       ts_neighbourhood_definition);
+                }
+            }
+            44 => {
+                let datafiles = vec![("ftv47.atsp", 120), ("ftv170.atsp", 240), ("rbg403.atsp", 360)];
+                for data in datafiles {
+                    matrix = file_reader::read_any_file("data/".to_owned() + data.0);
+                    for i in 0..10 {
+                        println!("\tIteracja {}.", i);
+                        println!("\t\tTabu Search (iterations: {}, lifetime: {}, crit_events: {}, max_time: {}, neigh_def: {}).", ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
+                        tabu_search::solve(&mut matrix, ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
+                        println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
+                        simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
+                        println!("\nIteracja {} - koniec.", i);
+                    }
                 }
             }
             5 => {
@@ -198,6 +212,7 @@ fn main() {
                                                time_max);
                 }
             }
+
             _ => println!("Niepoprawna wartość!"),
         }
     };

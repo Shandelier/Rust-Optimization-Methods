@@ -8,7 +8,8 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
              iterations: i32,
              lifetime: i32,
              max_critical_events: i32,
-             max_time_in_seconds: i64) {
+             max_time_in_seconds: i64,
+             ts_neighbourhood_definition: i32) {
     println!("Przygotowywanie zmiennych...");
 
     // Początek zliczania czasu
@@ -73,7 +74,13 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
         let iteration_path_value = current_path_value.clone();
 
         // Zmiana elementów w ścieżce
-        current_path = swap_elements(&mut current_path, &mut tabu_list, &matrix, lifetime);
+//        if ts_neighbourhood_definition == 0 {
+        current_path = swap_elements(&current_path, &mut tabu_list, &matrix, lifetime);
+//        } else if ts_neighbourhood_definition == 1 {
+//            current_path = insert_random_city(&current_path, &mut tabu_list);
+//        } else if ts_neighbourhood_definition == 2 {
+//            current_path = inverse_part_of_path(&current_path, &mut tabu_list);
+//        }
 
         // Aktualizacja wagi aktualnej ściezki
         current_path_value = get_current_path_value(&matrix, &mut current_path);
@@ -162,7 +169,7 @@ fn get_current_path_value(matrix: &Vec<Vec<i32>>,
     return value;
 }
 
-fn swap_elements(path: &mut Vec<i32>,
+fn swap_elements(path: &Vec<i32>,
                  tabu_list: &mut Vec<Vec<i32>>,
                  matrix: &Vec<Vec<i32>>,
                  lifetime: i32) -> Vec<i32> {
@@ -213,6 +220,42 @@ fn swap_elements(path: &mut Vec<i32>,
 
     return best_path;
 }
+
+//fn insert_random_city(path: &Vec<i32>) -> Vec<i32> {
+//    let a = rand::thread_rng().gen_range(0, path.len());
+//    let b = rand::thread_rng().gen_range(0, path.len());
+//
+//    let mut new_path = path.clone();
+//    let city_to_insert: i32 = path[b];
+//    new_path.remove(b as usize);
+//    new_path.insert(a as usize, city_to_insert);
+//
+//    return new_path;
+//}
+//
+//fn inverse_part_of_path(path: &Vec<i32>) -> Vec<i32> {
+//    let mut a = rand::thread_rng().gen_range(0, path.len());
+//    let mut b = rand::thread_rng().gen_range(0, path.len());
+//
+//    if a < b {
+//        let c = a;
+//        a = b;
+//        b = c;
+//    }
+//
+//    let mut new_path: Vec<i32> = Vec::new();
+//    for i in 0..a {
+//        new_path.push(path[i]);
+//    }
+//    for i in b..a {
+//        new_path.push(path[i]);
+//    }
+//    for i in b..path.len() {
+//        new_path.push(path[i]);
+//    }
+//
+//    return new_path;
+//}
 
 #[cfg(test)]
 mod ts_tests {

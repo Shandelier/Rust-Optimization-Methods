@@ -4,7 +4,10 @@ extern crate rand;
 use self::rand::Rng;
 use print_utils;
 
-pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f32, time_max: i64) -> (Vec<i32>, i32) {
+pub fn solve(matrix: &mut Vec<Vec<i32>>,
+             temperature: f32,
+             annealing_velocity: f32,
+             time_max: i64) -> (Vec<i32>, i32) {
     println!("Przygotowywanie zmiennych…");
 
     let timer_start = time::PreciseTime::now();
@@ -48,7 +51,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>, temperature: f32, annealing_velocity: f
             }
         }
 
-        _temperature *= 1.0f32 - annealing_velocity;
+        _temperature *= annealing_velocity;
     }
 
     let timer_stop = time::PreciseTime::now();
@@ -74,7 +77,7 @@ pub fn path_value(matrix: &Vec<Vec<i32>>, path: &Vec<i32>) -> i32 {
     return result;
 }
 
-pub fn swap_random_cities(path: &Vec<i32>) -> Vec<i32> {
+fn swap_random_cities(path: &Vec<i32>) -> Vec<i32> {
     let a = rand::thread_rng().gen_range(0, path.len());
     let b = rand::thread_rng().gen_range(0, path.len());
 
@@ -85,7 +88,7 @@ pub fn swap_random_cities(path: &Vec<i32>) -> Vec<i32> {
     return new_path;
 }
 
-pub fn probability(current_value: &i32, new_value: &i32, temperature: &f32) -> f32 {
+fn probability(current_value: &i32, new_value: &i32, temperature: &f32) -> f32 {
     let probability: f32;
 
     if current_value > new_value {
