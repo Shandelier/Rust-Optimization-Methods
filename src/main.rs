@@ -5,6 +5,7 @@ mod tabu_search;
 mod simulated_annealing;
 
 use std::io;
+use std::thread;
 
 fn main() {
     println!();
@@ -216,10 +217,10 @@ fn main() {
                         //println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
                         simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
 
-                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
+                        // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
                         simulated_annealing::solve(&mut matrix, sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
 
-                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
+                        // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
                         simulated_annealing::solve(&mut matrix, sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
                     }
                 }
@@ -232,6 +233,31 @@ fn main() {
                                                sa_temperature,
                                                sa_annealing_velocity,
                                                time_max);
+                }
+            }
+
+            55 => {
+                // (nazwa pliku, czas maksymalny)
+                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
+                //let datafiles = vec![("ftv47.atsp", 60)];
+                for data in datafiles {
+                    matrix = file_reader::read_any_file("data/".to_owned() + data.0);
+
+                    let mut children = vec![];
+
+                    for _ in 0..10 {
+                        let mut x = matrix.clone();
+                        children.push(thread::spawn(move || {
+                            let temps = vec![(20f32, 0.99999, 60), (20f32, 0.99994, 120), (20f32, 0.9999, 180)];
+                            for t in temps {
+                                simulated_annealing::solve(&mut x, t.0, t.1, t.2);
+                            }
+                        }));
+                    }
+
+                    for child in children {
+                        let _ = child.join();
+                    }
                 }
             }
 

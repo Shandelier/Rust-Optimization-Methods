@@ -62,7 +62,7 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
 //                                  .num_nanoseconds()
 //                                  .unwrap());
 
-    println!("{} {} {}", temperature, best_value, timer_start.to(timer_stop).num_nanoseconds().unwrap());
+    println!("{} {} {} {} {}", temperature, _temperature, annealing_velocity, best_value, timer_start.to(timer_stop).num_milliseconds());
 
     return (best_path, best_value);
 }
