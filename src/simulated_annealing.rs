@@ -15,6 +15,8 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     let mut _temperature: f32 = temperature;
 
     // Przygotowanie ścieżki początkowej
+    // Generowanie "najtańszej lokalnie" ścieżki
+    // let mut current_path: Vec<i32> = find_first_path(&matrix, rand::thread_rng().gen_range(0, (matrix.len() as i32) - 1));
     let mut current_path: Vec<i32> = Vec::new();
     for i in 0..(matrix.len() as i32) {
         current_path.push(i);
@@ -31,7 +33,6 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
     while _temperature > 1.0 {
         // Warunek sprawdzający, czy przekroczono czas.
         if timer_start.to(time::PreciseTime::now()).num_seconds() >= time_max {
-            //eprintln!("Przekroczono czas wykonania.");
             break;
         }
 
@@ -48,6 +49,8 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
             if current_value < best_value {
                 best_value = current_value;
                 best_path = current_path.clone();
+
+                println!("{} {}", best_value, timer_start.to(time::PreciseTime::now()).num_nanoseconds().unwrap());
             }
         }
 
@@ -56,13 +59,13 @@ pub fn solve(matrix: &mut Vec<Vec<i32>>,
 
     let timer_stop = time::PreciseTime::now();
 
-//    print_utils::print_result(best_value,
-//                              best_path.clone(),
-//                              timer_start.to(timer_stop)
-//                                  .num_nanoseconds()
-//                                  .unwrap());
+    print_utils::print_result(best_value,
+                              best_path.clone(),
+                              timer_start.to(timer_stop)
+                                         .num_nanoseconds()
+                                         .unwrap());
 
-    println!("{} {} {}", temperature, best_value, timer_start.to(timer_stop).num_nanoseconds().unwrap());
+    // println!("{} {} {} {} {} {} {:?}", matrix.len(), temperature, _temperature, annealing_velocity, best_value, timer_start.to(timer_stop).num_nanoseconds().unwrap(), best_path.clone());
 
     return (best_path, best_value);
 }
@@ -103,9 +106,61 @@ fn probability(current_value: &i32, new_value: &i32, temperature: &f32) -> f32 {
     return probability;
 }
 
+fn find_first_path(matrix: &Vec<Vec<i32>>, start_city_index: i32) -> Vec<i32> {
+    let mut path: Vec<i32> = vec![];
+
+    assert_eq!(true, start_city_index < matrix.len() as i32);
+    path.push(start_city_index);
+
+    for i in 1..matrix.len() {
+        let mut min_cost: i32 = <i32>::max_value();
+        let mut index: i32 = 0;
+        for j in 0..matrix.len() {
+            if i == j {
+                continue;
+            }
+            if matrix[path[i - 1] as usize][j] < min_cost {
+                if !path.contains(&(j as i32)) {
+                    min_cost = matrix[path[i - 1] as usize][j];
+                    index = j as i32;
+                }
+            }
+        }
+        path.push(index);
+    }
+
+    return path;
+}
+
 #[cfg(test)]
 mod sa_tests {
     use simulated_annealing;
+
+    #[test]
+    fn test_first_path() {
+        let mut tested_matrix: Vec<Vec<i32>> = Vec::new();
+        tested_matrix.push(vec![<i32>::max_value(), 20, 30, 10, 11]);
+        tested_matrix.push(vec![15, <i32>::max_value(), 16, 4, 2]);
+        tested_matrix.push(vec![3, 5, <i32>::max_value(), 2, 4]);
+        tested_matrix.push(vec![19, 6, 18, <i32>::max_value(), 3]);
+        tested_matrix.push(vec![16, 4, 7, 16, <i32>::max_value()]);
+
+        let expected_result = vec![0, 3, 4, 1, 2];
+        let result = simulated_annealing::find_first_path(&tested_matrix, 0);
+
+        assert_eq!(true, result.len() == expected_result.len());
+
+        let mut test = true;
+        for i in 0..result.len() {
+            if result[i] != expected_result[i] {
+                test = false;
+                break;
+            }
+        }
+
+        eprintln!("{:?} vs {:?}", expected_result, result);
+        assert_eq!(true, test);
+    }
 
     /* Testuje obliczanie kosztu ścieżki */
     #[test]

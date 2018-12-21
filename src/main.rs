@@ -5,6 +5,7 @@ mod tabu_search;
 mod simulated_annealing;
 
 use std::io;
+use std::thread;
 
 fn main() {
     println!();
@@ -15,7 +16,7 @@ fn main() {
     let mut matrix: Vec<Vec<i32>> = Vec::new();
 
     // Kryterium stopu: maksymalny czas wykonania
-    let mut time_max: i64 = 180;
+    let mut time_max: i64 = 60;
 
     // [SA] Współczynnik zmiany temperatury
     let mut sa_annealing_velocity: f32 = 0.999f32;
@@ -72,7 +73,7 @@ fn main() {
                         "Błąd wejścia/wyjścia",
                     );
 
-                matrix = file_reader::read_any_file(String::from(file_name.trim()));
+                matrix = file_reader::read_any_file(String::from(file_name.trim()), true);
 
                 print_utils::print_matrix(&matrix);
             }
@@ -136,15 +137,15 @@ fn main() {
                 }
                 input.clear();
 
-// TODO: Uncomment when implemented.
-//                println!("[TS] Definicja sąsiedztwa [0 - swap, 1 - insert, 2 - inverse] [teraz: {}]: ", ts_neighbourhood_definition);
-//                io::stdin().read_line(&mut input).expect(
-//                    "Błąd wejścia/wyjścia",
-//                );
-//                if !input.trim().is_empty() {
-//                    ts_neighbourhood_definition = input.trim().parse().expect("Błędna wartość");
-//                }
-//                input.clear();
+                // TODO: Uncomment when implemented.
+                // println!("[TS] Definicja sąsiedztwa [0 - swap, 1 - insert, 2 - inverse] [teraz: {}]: ", ts_neighbourhood_definition);
+                // io::stdin().read_line(&mut input).expect(
+                //    "Błąd wejścia/wyjścia",
+                // );
+                // if !input.trim().is_empty() {
+                //    ts_neighbourhood_definition = input.trim().parse().expect("Błędna wartość");
+                // }
+                // input.clear();
 
 
                 println!("[TS] Iteracje  [teraz: {}]: ", ts_iterations);
@@ -185,42 +186,49 @@ fn main() {
                                        ts_lifetime,
                                        ts_critical_events,
                                        time_max,
-                                       ts_neighbourhood_definition);
-                }
-            }
-            44 => {
-                // (nazwa pliku, czas maksymalny)
-                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
-                for data in datafiles {
-                    matrix = file_reader::read_any_file("data/".to_owned() + data.0);
-                    for i in 0..10 {
-                        println!("\tIteracja {}.", i + 1);
-
-                        println!("\t\tTabu Search (iterations: {}, lifetime: {}, crit_events: {}, max_time: {}, neigh_def: {}).", ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
-                        tabu_search::solve(&mut matrix, ts_iterations, ts_lifetime, ts_critical_events, data.1, ts_neighbourhood_definition);
-
-                        println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
-                        simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
-
-                        println!("\nIteracja {} - koniec.", i);
-                    }
+                                       ts_neighbourhood_definition,
+                                       true);
                 }
             }
             444 => {
                 // (nazwa pliku, czas maksymalny)
-//                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
-                let datafiles = vec![("ftv47.atsp", 60)];
+                let datafiles = vec![("ftv47.atsp", 120), ("ftv170.atsp", 240), ("rbg403.atsp", 360)];
                 for data in datafiles {
-                    matrix = file_reader::read_any_file("data/".to_owned() + data.0);
-                    for i in 0..10 {
-                        //println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature, sa_annealing_velocity, data.1);
-                        simulated_annealing::solve(&mut matrix, sa_temperature, sa_annealing_velocity, data.1);
+                    matrix = file_reader::read_any_file("data/".to_owned() + data.0, false);
 
-                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
-                        simulated_annealing::solve(&mut matrix, sa_temperature * 10.0f32, sa_annealing_velocity, data.1);
+                    let mut children = vec![];
 
-                       // println!("\t\tSimulated Annealing (temperature: {}, annealing_velocity: {}, max_time: {}).", sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
-                        simulated_annealing::solve(&mut matrix, sa_temperature * 100.0f32, sa_annealing_velocity, data.1);
+                    for _ in 0..10 {
+                        let mut x = matrix.clone();
+                        let time = data.1;
+                        // (iteracje, kadencja, błędy)
+                        // iteracje: 5k, 10k, 20k
+                        // kadencja: 10, 20, 40
+                        // błędy: 10, 25, 75
+                        let versions = vec![(5000, 10, 10), (5000, 10, 25), (5000, 10, 75),
+                                            (5000, 20, 10), (5000, 20, 25), (5000, 20, 75),
+                                            (5000, 40, 10), (5000, 40, 25), (5000, 40, 75),
+                                            (10000, 10, 10), (10000, 10, 25), (10000, 10, 75),
+                                            (10000, 20, 10), (10000, 20, 25), (10000, 20, 75),
+                                            (10000, 40, 10), (10000, 40, 25), (10000, 40, 75),
+                                            (20000, 10, 10), (20000, 10, 25), (20000, 10, 75),
+                                            (20000, 20, 10), (20000, 20, 25), (20000, 20, 75),
+                                            (20000, 40, 10), (20000, 40, 25), (20000, 40, 75)];
+                        children.push(thread::spawn(move || {
+                            for version in versions {
+                                tabu_search::solve(&mut x, 
+                                               version.0, 
+                                               version.1, 
+                                               version.2, 
+                                               time, 
+                                               0, 
+                                               false);
+                            }
+                        }));
+                    }
+                
+                    for child in children {
+                        let _ = child.join();
                     }
                 }
             }
@@ -234,7 +242,35 @@ fn main() {
                                                time_max);
                 }
             }
+            555 => {
+                // (nazwa pliku, czas maksymalny)
+                let datafiles = vec![("ftv47.atsp", 60), ("ftv170.atsp", 120), ("rbg403.atsp", 180)];
 
+                for data in datafiles {
+                    matrix = file_reader::read_any_file("data/".to_owned() + data.0, false);
+                    let mut children = vec![];
+
+                    for _ in 0..10 {
+                        let mut x = matrix.clone();
+                        let timeout = data.1;
+                        children.push(thread::spawn(move || {
+                            simulated_annealing::solve(&mut x, 10f32, 0.99999, timeout);
+                            simulated_annealing::solve(&mut x, 20f32, 0.99999, timeout);
+                            simulated_annealing::solve(&mut x, 40f32, 0.99999, timeout);
+                            simulated_annealing::solve(&mut x, 10f32, 0.999994, timeout);
+                            simulated_annealing::solve(&mut x, 20f32, 0.999994, timeout);
+                            simulated_annealing::solve(&mut x, 40f32, 0.999994, timeout);
+                            simulated_annealing::solve(&mut x, 10f32, 0.999999, timeout);
+                            simulated_annealing::solve(&mut x, 20f32, 0.999999, timeout);
+                            simulated_annealing::solve(&mut x, 40f32, 0.999999, timeout);
+                        }));
+                    }
+
+                    for child in children {
+                        let _ = child.join();
+                    }
+                }
+            }
             _ => println!("Niepoprawna wartość!"),
         }
     };
