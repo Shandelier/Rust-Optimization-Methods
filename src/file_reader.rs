@@ -5,24 +5,32 @@ use std::io::BufRead;
 use std::error::Error;
 use std::fs::File;
 
-pub fn read_any_file(file_name: String) -> Vec<Vec<i32>> {
+pub fn read_any_file(file_name: String, shall_print: bool) -> Vec<Vec<i32>> {
     if file_name.ends_with("txt") {
-        println!("Wybrano macierz grafu");
-        return read_txt_file(file_name)
+        if shall_print {
+            println!("Wybrano macierz grafu");
+        }
+        return read_txt_file(file_name, shall_print)
     } else if file_name.ends_with("atsp") {
-        println!("Wybrano plik ATSP");
-        return read_atsp_file(file_name)
+        if shall_print {
+            println!("Wybrano plik ATSP");
+        }
+        return read_atsp_file(file_name, shall_print)
     } else {
-        println!("Wybrano plik TSP");
-        return read_tsp_file(file_name)
+        if shall_print {
+            println!("Wybrano plik TSP");
+        }
+        return read_tsp_file(file_name, shall_print)
     }
 }
 
 //Odczytuje macierz z pliku
-pub fn read_txt_file(file_name: String) -> Vec<Vec<i32>> {
+pub fn read_txt_file(file_name: String, shall_print: bool) -> Vec<Vec<i32>> {
     let mut matrix: Vec<Vec<i32>> = Vec::new();
 
-    println!("Odczytywanie pliku {}...", &file_name);
+    if shall_print {
+        println!("Odczytywanie pliku {}...", &file_name);
+    }
 
     //Stworzenie zmiennej plikowej
     let file = match File::open(&file_name) {
@@ -51,7 +59,9 @@ pub fn read_txt_file(file_name: String) -> Vec<Vec<i32>> {
                 //Wyswietl liczbę miast z pierwszej linii
                 //Pozostałe linie parsuj do wektora i dodaj jako wiersz macierzy
                 if first_line {
-                    println!("Liczba miast: {}", line);
+                    if shall_print {
+                        println!("Liczba miast: {}", line);
+                    }
                     first_line = false;
                 } else {
                     matrix.push(parse_file_line(line));
@@ -73,13 +83,15 @@ fn parse_file_line(line: String) -> Vec<i32> {
         .collect();
 }
 
-fn read_tsp_file(file_name: String) -> Vec<Vec<i32>> {
+fn read_tsp_file(file_name: String, shall_print: bool) -> Vec<Vec<i32>> {
     let instance_result = self::tsplib::read(file_name);
     let mut matrix: Vec<Vec<i32>> = Vec::new();
 
     match instance_result {
         Ok(instance) => {
-            println!("Nazwa: {}", &instance.name);
+            if shall_print {
+                println!("Nazwa: {}", &instance.name);
+            }
 
             let node_coord_option = instance.node_coord;
 
@@ -143,7 +155,7 @@ fn distance_between_coordinates(x_start: f32,
     return distance_power_sum.sqrt() as i32;
 }
 
-fn read_atsp_file(file_name: String) -> Vec<Vec<i32>> {
+fn read_atsp_file(file_name: String, shall_print: bool) -> Vec<Vec<i32>> {
     let mut matrix: Vec<Vec<i32>> = Vec::new();
 
     //Stworzenie zmiennej plikowej
@@ -181,7 +193,9 @@ fn read_atsp_file(file_name: String) -> Vec<Vec<i32>> {
                 if current_line == 3 {
                     let number_of_cities: Vec<&str> = line.split_whitespace().collect();
                     number_of_nodes = number_of_cities[1].parse().unwrap();
-                    println!("Liczba miast: {}", number_of_nodes);
+                    if shall_print {
+                        println!("Liczba miast: {}", number_of_nodes);
+                    }
                 } else
 
                 // Jeżeli linia jest linią macierzy i nie jest EOF

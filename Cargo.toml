@@ -1,7 +1,7 @@
 [package]
-name = "tabu_search"
+name = "pea_2"
 version = "0.1.0"
-authors = ["Igor Kurek <igorkurek96@gmail.com>"]
+authors = [""]
 
 [dependencies]
 rand = "0.3"
